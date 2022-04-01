@@ -1,4 +1,5 @@
 
+import 'package:assignment4/GameController.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -13,39 +14,40 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
   var gameType = true;
   var gameMode = true;
 
-  double round = -1;
+  double round = 5;
   double time = -1;
   bool isRound = true;
   bool isFree = false;
   double goal = -1;
 
+  var buttonNum = 3;
   var isRandom = true;
   var hasIndication = true;
+  var buttonSize = 3.0;
 
-  var buttonSize = 2;
   List<double> timeList = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
   List<double> roundList = [3, 4, 5, 6, 7, 8];
   var buttonNumList = [2, 3, 4, 5];
 
   List<DropdownMenuItem<double>> _goalDropDownItems = [];
+  List<DropdownMenuItem<int>> _buttonNumDropDownItems = [];
 
   var goalModeBtnColor = Colors.amber;
   var freeModeBtnColor = Colors.amber;
   var roundBtnColor = Colors.amber;
   var timeBtnColor = Colors.amber;
 
-  ButtonStyle? btnStyle =
-  ElevatedButton.styleFrom(
-      primary: Colors.amber,
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
+  var sizeHint = "Normal";
 
   @override
   void initState() {
     super.initState();
 
     _goalDropDownItems = setGoalDropDownItem();
+    _buttonNumDropDownItems = setButtonNumDropDownItem();
     setBtnColor();
+
+    debugResult();
   }
 
   List<DropdownMenuItem<double>> setGoalDropDownItem() {
@@ -68,6 +70,34 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
     }
 
     return items;
+  }
+
+  List<DropdownMenuItem<int>> setButtonNumDropDownItem() {
+    List<DropdownMenuItem<int>> items = [];
+    for (int num in buttonNumList) {
+      items.add(new DropdownMenuItem(
+          value: num,
+          child: new Text(num.toString())
+      ));
+    }
+
+    buttonNum = items[1].value!;
+
+    return items;
+  }
+
+  void setSizeHint() {
+    if (buttonSize == 1.0) {
+      sizeHint = "Extra Small";
+    } else if (buttonSize == 2.0) {
+      sizeHint = "Small";
+    } else if (buttonSize == 3.0) {
+      sizeHint = "Normal";
+    } else if (buttonSize == 4.0) {
+      sizeHint = "Big";
+    } else {
+      sizeHint = "Extra Big";
+    }
   }
 
   void setBtnColor() {
@@ -100,7 +130,7 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.fromLTRB(0, 32, 0, 40),
                 child: Text(
                   "Choose the game mode",
                   textAlign: TextAlign.center,
@@ -117,12 +147,13 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                 child: Row(
                   children: [
                     Padding(
-                      padding: EdgeInsets.fromLTRB(130, 8, 40, 10),
+                      padding: EdgeInsets.fromLTRB(100, 8, 40, 10),
                       child: ElevatedButton(
                         onPressed: () {
                           if (isFree == true) {
                             setState(() {
                               isFree = false;
+                              gameMode = true;
                               _goalDropDownItems = setGoalDropDownItem();
 
                               if (isRound == true) {
@@ -141,16 +172,19 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                         style: ElevatedButton.styleFrom(
                             primary: goalModeBtnColor,
                             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                            textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                            textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
                         ),
                         child: Text("Goal-mode")
                       ),
                     ),
                     SizedBox(
                       width: 100,
+                      height: 50,
                       child: DropdownButton(
                           items: _goalDropDownItems,
                           value: goal,
+                          isExpanded: true,
+                          itemHeight: 60,
                           onChanged: (selectedGoal) {
                             setState(() {
                               if (isRound == true) {
@@ -188,7 +222,7 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                           style: ElevatedButton.styleFrom(
                               primary: roundBtnColor,
                               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                              textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
                           ),
                           child: Text("Rounds")
                       ),
@@ -215,7 +249,7 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                           style: ElevatedButton.styleFrom(
                               primary: timeBtnColor,
                               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                              textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
                           ),
                           child: Text("Minutes")
                       ),
@@ -231,6 +265,7 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                       if (isFree == false) {
                         setState(() {
                           isFree = true;
+                          gameMode = false;
                           round = -1;
                           time = -1;
 
@@ -244,11 +279,221 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                     style: ElevatedButton.styleFrom(
                         primary: freeModeBtnColor,
                         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                        textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
                     ),
                     child: Text("Free-mode"),
                   ),
                 ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 40, 0, 8),
+                child: Center(
+                  child: Text(
+                    "Customization",
+                    style: TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      fontStyle: FontStyle.italic
+                    ),
+                  )
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(85, 15, 40, 0),
+                      child: Text(
+                        "The number of buttons each round",
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 15, 50, 0),
+                      child: SizedBox(
+                        width: 100,
+                        child: DropdownButton(
+                            items: _buttonNumDropDownItems,
+                            value: buttonNum,
+                            isExpanded: true,
+                            onChanged: (selectedNum) {
+                              setState(() {
+                                buttonNum = selectedNum as int;
+
+                                debugResult();
+                              });
+                            }
+                        ),
+                      ),
+                    ),
+
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(135, 20, 30, 0),
+                      child: Text(
+                        "Is random order each round",
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(50, 20, 50, 0),
+                      child: SizedBox(
+                        width: 100,
+                        child: Switch(
+                          value: isRandom,
+                          onChanged: (value) {
+                            setState(() {
+                              isRandom = value;
+                              debugResult();
+                            });
+                          },
+                        )
+                      ),
+                    ),
+
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(145, 20, 30, 0),
+                      child: Text(
+                        "Has next button indication",
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(55, 20, 50, 0),
+                      child: SizedBox(
+                          width: 100,
+                          child: Switch(
+                            value: hasIndication,
+                            onChanged: (value) {
+                              setState(() {
+                                hasIndication = value;
+                                debugResult();
+                              });
+                            },
+                          )
+                      ),
+                    ),
+
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 36, 0, 20),
+                child: Center(
+                  child: Text(
+                    "Select the size of button",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26
+                    ),
+                  ),
+                ),
+              ),
+
+              Center(
+                child: SizedBox(
+                  width: 250,
+                  child: Slider(
+                    value: buttonSize,
+                    min: 1,
+                    max: 5,
+                    divisions: 4,
+                    onChanged: (value) {
+                      setState(() {
+                        buttonSize = value;
+                        setSizeHint();
+                        debugResult();
+                      });
+                    }
+                  ),
+                ),
+              ),
+              Center(
+                child: Text(
+                  sizeHint,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 28,
+                    fontStyle: FontStyle.italic
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(48, 32, 50, 24),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          primary: freeModeBtnColor,
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                          textStyle: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)
+                      ),
+                      child: Text(
+                        "Back",
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(376, 32, 0, 24),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(
+                            builder: (context) {
+                              return GamePage(
+                                gameType: this.gameType,
+                                gameMode: this.gameMode,
+                                isFree: this.isFree,
+                                isRound: this.isRound,
+                                buttonNum: this.buttonNum,
+                                isRandom: this.isRandom,
+                                hasIndication: this.hasIndication,
+                                buttonSize: this.buttonSize,
+                                round: this.round,
+                                time: this.time,
+                              );
+                            })
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                          primary: freeModeBtnColor,
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                          textStyle: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)
+                      ),
+                      child: Text(
+                        "Start",
+                      ),
+                    ),
+                  ),
+                ],
               )
             ],
           ),
@@ -258,12 +503,19 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
   }
 
   void debugResult() {
+    print("******");
     print("Round ${round}");
     print("Time ${time}");
     print("Is Round ${isRound}");
 
     print("Goal ${goal}");
 
-    //print("GoalList ${_goalDropDownItems}");
+    print("Button num ${buttonNum}");
+    print("Is random ${isRandom}");
+    print("Has indication ${hasIndication}");
+    print("Button size ${buttonSize}");
+
+    print("gameType ${gameType}");
+    print("gameMode ${gameMode}");
   }
 }
