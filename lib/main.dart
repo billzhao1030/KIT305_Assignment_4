@@ -108,7 +108,7 @@ class _MainPageState extends State<MainPage> {
     final prefs = await SharedPreferences.getInstance();
 
     var username = prefs.getString("FlutterUsername") ?? "Name";
-    print("In memory $username");
+    //print("In memory $username");
     userNameController.text = username;
   }
 
