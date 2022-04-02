@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Game.dart';
 
-final String DATABASE = "gamesFlutter";
+const String DATABASE = "gamesFlutter";
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,9 +73,8 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-
-    userNameController.addListener(updateUsername);
     setSummary();
+    userNameController.addListener(updateUsername);
   }
 
   void setSummary() async {
@@ -95,7 +94,8 @@ class _MainPageState extends State<MainPage> {
       }
     });
 
-    summary = "You have completed\n ${prescribedTotal} repetitions in Number In Order\n ${designedTotal} repetitions in Matching Numbers";
+    summary = "You have completed\n ${prescribedTotal} repetitions in Number In Order\n "
+        "${designedTotal} repetitions in Matching Numbers";
   }
 
   @override

@@ -453,7 +453,7 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                          primary: freeModeBtnColor,
+                          primary: Colors.amber,
                           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                           textStyle: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)
                       ),
@@ -476,15 +476,15 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                                 buttonNum: this.buttonNum,
                                 isRandom: this.isRandom,
                                 hasIndication: this.hasIndication,
-                                buttonSize: this.buttonSize,
-                                round: this.round,
-                                time: this.time,
+                                buttonSize: this.buttonSize.toInt(),
+                                round: this.round.toInt(),
+                                time: this.time.toInt(),
                               );
                             })
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                          primary: freeModeBtnColor,
+                          primary: Colors.amber,
                           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                           textStyle: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold)
                       ),
