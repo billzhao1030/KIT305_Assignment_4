@@ -478,7 +478,7 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                                 hasIndication: this.hasIndication,
                                 buttonSize: this.buttonSize.toInt(),
                                 round: this.round.toInt(),
-                                time: this.time.toInt(),
+                                time: (this.time * 60).toInt(),
                               );
                             })
                         );

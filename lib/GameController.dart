@@ -1,6 +1,8 @@
 
+import 'dart:async';
 import 'dart:math';
 
+import 'package:assignment4/GameFinish.dart';
 import 'package:assignment4/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -59,21 +61,55 @@ class _GamePageState extends State<GamePage> {
   var xList = [];
   var yList = [];
 
+  List<bool> highlightList = List.filled(1, false, growable: true);
+  List<bool> completeList = List.filled(1, false, growable: true);
+
   var finshOrMenu = "Go back to Menu";
 
   DateFormat dateFormatID = DateFormat("yyyyMMddHHmmss");
   DateFormat dateFormat = DateFormat("dd/MM/yyyy HH:mm:ss");
+  DateFormat clickFormat = DateFormat("HH:mm:ss");
+  
+  Timer? countDownTimer;
+  Duration gameDuration = Duration(days: 1);
 
   @override
   void initState() {
     super.initState();
 
     presetGame();
+  }
 
-    debugResult();
+  @override void dispose() {
+    super.dispose();
+  }
+  
+  void startTimer() {
+    countDownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setCountDown();
+    });
+  }
 
-    xList = getX();
-    yList = getY();
+  void stopTimer() {
+    if (!mounted) return;
+    setState(() {
+      countDownTimer!.cancel();
+    });
+  }
+
+  void setCountDown() {
+    if (!mounted) return;
+    setState(() {
+      timeLeft = gameDuration.inSeconds - 1;
+      if (timeLeft < 0) {
+        countDownTimer!.cancel();
+
+        completeGame();
+      } else {
+        gameDuration = Duration(seconds: timeLeft);
+        progressText = "${timeLeft}s  Round ${completedRound + 1}";
+      }
+    });
   }
 
   @override
@@ -103,6 +139,10 @@ class _GamePageState extends State<GamePage> {
                   right: 0,
                   child: ElevatedButton(
                     onPressed: () {
+                      if (widget.gameType == true && widget.gameMode == true
+                          && widget.isRound == false) {
+                        stopTimer();
+                      }
                       _displayDialog(context);
                     },
                     child: Text(
@@ -129,23 +169,27 @@ class _GamePageState extends State<GamePage> {
                 ),
               ),
             ),
-            Expanded(
-              child: Stack(
-                children: [
-                  Container(
-                    color: Colors.blue,
-                  ),
-                  for (var i=0; i<widget.buttonNum; i++) buildPositioned(xList[i], yList[i], (i+1))
-                ],
-              ),
-            )
+            widget.gameType ? buildPrescribed() : Text("nope")
           ],
         ),
       ),
     );
   }
 
-  Positioned buildPositioned(int mLeft, int mTop, int id) {
+  Expanded buildPrescribed() {
+    return Expanded(
+            child: Stack(
+              children: [
+                Container(
+                  color: Colors.blue,
+                ),
+                for (var i=0; i<widget.buttonNum; i++) buildPrescribedButton(xList[i], yList[i], (i+1))
+              ],
+            ),
+          );
+  }
+
+  Positioned buildPrescribedButton(int mLeft, int mTop, int id) {
     return Positioned(
                   left: mLeft.toDouble(),
                   top: mTop.toDouble(),
@@ -153,42 +197,93 @@ class _GamePageState extends State<GamePage> {
                     key: Key(id.toString()),
                     onPressed: () {
                       if (btnNow == id) {
+                        final Map<String, int> clickMap = {
+                          clickFormat.format(DateTime.now()): id
+                        };
+
                         setState(() {
+                          buttonList.add(clickMap);
+                          uploadButtonList();
+
+                          if (widget.hasIndication == true) {
+                            highlightList[btnNow - 1] = false;
+                          }
+
+                          completeList[id-1] = true;
+
                           btnNow++;
-                          if (btnNow == widget.buttonNum + 1) {
+                          if (btnNow > widget.buttonNum) {
                             btnNow = 1;
                             completedRound++;
 
-                            this.xList = getX();
-                            this.yList = getY();
+                            if (widget.gameMode == false) {
+                              completed = true;
+                            }
+
+                            uploadRound();
+
+                            resetStr();
+
+                            if (widget.gameMode == false) {
+                              completed = true;
+                            }
+
+                            if (widget.gameMode == true) {
+                              if (widget.round != -1) {
+                                if (completedRound == widget.round) {
+                                  completed = true;
+                                  print("completed");
+                                  completeGame();
+                                } else {
+                                  reposition();
+                                  progressText = "${completedRound+1} of ${widget.round} round";
+                                }
+                              } else {
+                                this.xList = getX();
+                                this.yList = getY();
+                                progressText = "${timeLeft}s  Round ${completedRound + 1}";
+                              }
+                            } else {
+                              reposition();
+                              progressText = "Round ${completedRound + 1}";
+                            }
                           }
-                          print(btnNow);
+
+                          if (widget.hasIndication == true) {
+                            highlightList[btnNow-1] = true;
+                          }
+                        });
+                      } else {
+                        setState(() {
+                          final Map<String, int> clickMap = {
+                            clickFormat.format(DateTime.now()): id * 10
+                          };
+                          buttonList.add(clickMap);
+                          uploadButtonList();
                         });
                       }
                     },
                     child: Text(
-                      id.toString(),
+                        (completeList[id-1] ? "\u2713" : id.toString()),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 26
+                        fontSize: (24 + widget.buttonSize *2)
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
+                      primary: highlightList[id-1] ? Colors.orange : Colors.amber,
                       shape: CircleBorder(),
                       padding: EdgeInsets.all(24),
-                      fixedSize: Size(120, 120)
+                      fixedSize: Size(buttonSize.toDouble(), buttonSize.toDouble())
                     ),
                   )
                 );
   }
 
-  void reposition() {
-
-  }
-
   _displayDialog(BuildContext context) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Expanded(
           child: SimpleDialog(
@@ -211,10 +306,19 @@ class _GamePageState extends State<GamePage> {
                     onPressed: () {},
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        uploadRound();
+                        if (completed == true) {
+                          completeGame();
+                        } else {
+                          Navigator.push(context, MaterialPageRoute(
+                              builder: (context) {
+                                return MainPage();
+                              })
+                          );
+                        }
                       },
                       child: Text(
-                        finshOrMenu,
+                        completed ? "Finish Exercise" : "Go back to menu",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: 32,
@@ -235,6 +339,11 @@ class _GamePageState extends State<GamePage> {
                     child: ElevatedButton(
                       onPressed: (){
                         Navigator.pop(context);
+                        uploadRound();
+                        if (widget.gameType == true &&
+                            widget.gameMode == true && widget.isRound == false) {
+                          startTimer();
+                        }
                       },
                       child: Text(
                         'Continue Exercise',
@@ -256,10 +365,13 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  Widget creatButtons() {
-    return Expanded(
-      child: Text(""),
-    );
+  void reposition() {
+    setState(() {
+      if (widget.isRandom == true) {
+        this.xList = getX();
+        this.yList = getY();
+      }
+    });
   }
 
   void debugResult() {
@@ -275,7 +387,7 @@ class _GamePageState extends State<GamePage> {
     print("buttonNum ${widget.buttonNum}");
     print("isRandom ${widget.isRandom}");
     print("hasIndication ${widget.hasIndication}");
-    print("buttonSize ${widget.buttonSize}");
+    print("buttonSize ${buttonSize}");
   }
 
   void uploadRound() async {
@@ -316,8 +428,7 @@ class _GamePageState extends State<GamePage> {
 
   void presetGame() {
     if (widget.gameType == true) {
-      buttonSize = widget.buttonSize * 2;
-      print("size ${buttonSize}");
+      buttonSize = widget.buttonSize * 10 + 70;
 
       gameRule = "Tap the button in number order (from 1)";
 
@@ -326,17 +437,66 @@ class _GamePageState extends State<GamePage> {
           progressText = "1 of ${widget.round} round";
         } else {
           timeLeft = widget.time;
-
+          gameDuration = Duration(seconds: timeLeft);
+          progressText = "${timeLeft}s  Round ${completedRound + 1}";
+          startTimer();
         }
       } else {
         progressText = "Round 1";
       }
+
+      for (var i = 0; i < widget.buttonNum; i++) {
+        if (i == 0) {
+          if (widget.hasIndication == true) {
+            highlightList[i] = true;
+          } else{
+            highlightList[i] = false;
+          }
+        } else {
+          highlightList.add(false);
+        }
+      }
+
+      for (var i = 0; i < widget.buttonNum; i++) {
+        if (i == 0) {
+          completeList[i] = false;
+        } else {
+          completeList.add(false);
+        }
+      }
+
+      this.xList = getX();
+      this.yList = getY();
     } else {
       gameRule = "Press and drag the number to pair them up";
       progressText = "Round 1";
     }
 
-    //gameInitiateDatabase();
+    debugResult();
+
+    gameInitiateDatabase();
+  }
+
+  void completeGame() async {
+    print("complete");
+    db.doc(id).update({
+      'completed': completed,
+      'endTime': dateFormat.format(DateTime.now())
+    })
+        .then((value) => print("Game updated"))
+        .catchError((error) => print("Failed to update game: ${error}"));
+
+    Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return GameFinishPage();
+        })
+    );
+  }
+
+  void resetStr() {
+    for (var i = 0; i < widget.buttonNum; i++) {
+      completeList[i] = false;
+    }
   }
 
   List getX() {
@@ -369,9 +529,9 @@ class _GamePageState extends State<GamePage> {
       }
     }
 
-    for (int i in x_list) {
-      print(i);
-    }
+    // for (int i in x_list) {
+    //   print(i);
+    // }
 
     return x_list;
   }
@@ -398,9 +558,9 @@ class _GamePageState extends State<GamePage> {
 
     }
 
-    for (int i in y_List) {
-      print(i);
-    }
+    // for (int i in y_List) {
+    //   print(i);
+    // }
 
     return y_List;
   }
