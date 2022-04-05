@@ -73,6 +73,12 @@ class _GamePageState extends State<GamePage> {
   Timer? countDownTimer;
   Duration gameDuration = Duration(days: 1);
 
+  var numButtonPair = 0;
+  bool isPair = false;
+
+  List<Color> dropboxColor = [Colors.green, Colors.blue, Colors.purple, Colors.red, Colors.brown];
+  List<bool> pairedList = List.filled(1, false, growable: true);
+
   @override
   void initState() {
     super.initState();
@@ -169,24 +175,34 @@ class _GamePageState extends State<GamePage> {
                 ),
               ),
             ),
-            widget.gameType ? buildPrescribed() : Text("nope")
+            buildGame()
           ],
         ),
       ),
     );
   }
 
-  Expanded buildPrescribed() {
-    return Expanded(
-            child: Stack(
-              children: [
-                Container(
-                  color: Colors.blue,
-                ),
-                for (var i=0; i<widget.buttonNum; i++) buildPrescribedButton(xList[i], yList[i], (i+1))
-              ],
-            ),
-          );
+  Expanded buildGame() {
+    if (widget.gameType == true) {
+      return Expanded(
+        child: Stack(
+          children: [
+            Container(),
+            for (var i=0; i<widget.buttonNum; i++) buildPrescribedButton(xList[i], yList[i], (i+1))
+          ],
+        ),
+      );
+    } else {
+      return Expanded(
+        child: Stack(
+          children: [
+            Container(),
+            for (var i=0; i<widget.buttonNum; i++) designedDropBox(((764-widget.buttonNum * 110)/2).toInt() + 110 *i + 15, 720, i+1),
+            for (var i=0; i<widget.buttonNum; i++) buildDesignedButton(xList[i], yList[i], i+1)
+          ],
+        )
+      );
+    }
   }
 
   Positioned buildPrescribedButton(int mLeft, int mTop, int id) {
@@ -217,6 +233,8 @@ class _GamePageState extends State<GamePage> {
                             completedRound++;
 
                             if (widget.gameMode == false) {
+                              completed = true;
+                            } else if (widget.isRound == false) {
                               completed = true;
                             }
 
@@ -271,13 +289,92 @@ class _GamePageState extends State<GamePage> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      primary: highlightList[id-1] ? Colors.orange : Colors.amber,
+                      primary: highlightList[id-1] ? Colors.red : Colors.amber,
                       shape: CircleBorder(),
                       padding: EdgeInsets.all(24),
                       fixedSize: Size(buttonSize.toDouble(), buttonSize.toDouble())
                     ),
                   )
                 );
+  }
+
+  Positioned designedDropBox(int mLeft, int mTop, int id) {
+    return Positioned(
+      left: mLeft.toDouble(),
+      top: mTop.toDouble(),
+      child: DragTarget<int> (
+        builder: (context, List<dynamic> accepted, List<dynamic> rejected) {
+          return Container(
+            height: 100,
+            width: 100,
+            color: dropboxColor[id - 1],
+            child: Center(
+              child: Text(
+                id.toString(),
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.italic
+                ),
+              )
+            ),
+          );
+        },
+        onWillAccept: (data) {
+          return data == id;
+        },
+        onAccept: (data) {
+          setState(() {
+            pairedList[id - 1] = true;
+            if (!pairedList.contains(false)) {
+              for (var i = 0; i < widget.buttonNum; i++) {
+                pairedList[i] = false;
+              }
+              completedRound ++;
+              completed = true;
+              uploadRound();
+              progressText = "Round ${completedRound + 1}";
+              if (widget.isRandom) {
+                reposition();
+              }
+            }
+          });
+        },
+      )
+    );
+  }
+
+  Positioned buildDesignedButton(int mLeft, int mTop, int id) {
+    return Positioned(
+        left: mLeft.toDouble(),
+        top: mTop.toDouble(),
+        child: !pairedList[id - 1] ? Draggable<int>(
+          data: id,
+          feedback: draggableButton(id, Colors.amber),
+          child: draggableButton(id, Colors.amber),
+          childWhenDragging: draggableButton(id, Colors.amberAccent),
+        ) : Container()
+    );
+  }
+
+  ElevatedButton draggableButton(int id, Color c) {
+    return ElevatedButton(
+          key: Key(id.toString()),
+          onPressed: () {},
+          child: Text(
+            id.toString(),
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: (30)
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+              primary:c,
+              shape: CircleBorder(),
+              padding: EdgeInsets.all(24),
+              fixedSize: Size(100, 100)
+          ),
+        );
   }
 
   _displayDialog(BuildContext context) {
@@ -391,18 +488,21 @@ class _GamePageState extends State<GamePage> {
   }
 
   void uploadRound() async {
+    endTime = dateFormat.format(DateTime.now());
     db.doc(id).update({
       'repetition': completedRound,
-      'endTime': dateFormat.format(DateTime.now())
+      'endTime': endTime,
+      'completed': completed
     })
     .then((value) => print("Game updated"))
     .catchError((error) => print("Failed to update game: ${error}"));
   }
 
   void uploadButtonList() async {
+    endTime = dateFormat.format(DateTime.now());
     db.doc(id).update({
       'buttonList': buttonList,
-      'endTime': dateFormat.format(DateTime.now())
+      'endTime': endTime
     })
     .then((value) => print("Game updated"))
     .catchError((error) => print("Failed to update game: ${error}"));
@@ -464,31 +564,45 @@ class _GamePageState extends State<GamePage> {
           completeList.add(false);
         }
       }
-
-      this.xList = getX();
-      this.yList = getY();
     } else {
       gameRule = "Press and drag the number to pair them up";
       progressText = "Round 1";
+
+      for (var i = 0; i < widget.buttonNum; i++) {
+        if (i==0) {
+          pairedList[i] = false;
+        } else {
+          pairedList.add(false);
+        }
+      }
     }
 
     debugResult();
+
+    this.xList = getX();
+    this.yList = getY();
 
     gameInitiateDatabase();
   }
 
   void completeGame() async {
-    print("complete");
+    endTime = dateFormat.format(DateTime.now());
     db.doc(id).update({
-      'completed': completed,
-      'endTime': dateFormat.format(DateTime.now())
+      'completed': true,
+      'endTime': endTime
     })
         .then((value) => print("Game updated"))
         .catchError((error) => print("Failed to update game: ${error}"));
 
     Navigator.push(context, MaterialPageRoute(
         builder: (context) {
-          return GameFinishPage();
+          return GameFinishPage(
+            id: this.id,
+            isRound: widget.isRound,
+            isFree: widget.isFree,
+            gameMode: widget.gameMode,
+            gameType: widget.gameType,
+          );
         })
     );
   }
@@ -506,32 +620,16 @@ class _GamePageState extends State<GamePage> {
 
     var numList = <int>[];
 
-    if (widget.gameType == true) {
-      for (var i = 1; i <= widget.buttonNum; i++) {
-        var random = generator.nextInt(5);
-        while (numList.contains(random)) {
-          random = generator.nextInt(5);
-        }
-        numList.add(random);
-
-        randomX = random * 160 + 1;
-        x_list.add(randomX);
+    for (var i = 1; i <= widget.buttonNum; i++) {
+      var random = generator.nextInt(5);
+      while (numList.contains(random)) {
+        random = generator.nextInt(5);
       }
-    } else {
-      for (var i = 1; i <= widget.buttonNum; i++) {
-        var random = generator.nextInt(5);
-        while (numList.contains(random)) {
-          random = generator.nextInt(5);
-        }
-        numList.add(random);
+      numList.add(random);
 
-        randomX = random * 160 + 1;
-      }
+      randomX = random * 160 + 5;
+      x_list.add(randomX);
     }
-
-    // for (int i in x_list) {
-    //   print(i);
-    // }
 
     return x_list;
   }
@@ -555,12 +653,17 @@ class _GamePageState extends State<GamePage> {
         y_List.add(randomY);
       }
     } else {
+      for (var i = 1; i <= widget.buttonNum; i++) {
+        var random = generator.nextInt(5);
+        while (numList.contains(random)) {
+          random = generator.nextInt(5);
+        }
+        numList.add(random);
 
+        randomY = random * 128 + 30;
+        y_List.add(randomY);
+      }
     }
-
-    // for (int i in y_List) {
-    //   print(i);
-    // }
 
     return y_List;
   }

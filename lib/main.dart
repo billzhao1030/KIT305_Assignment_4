@@ -44,7 +44,6 @@ class MyApp extends StatelessWidget {
           return Container();
         }
       },
-
     );
   }
 }
@@ -108,7 +107,6 @@ class _MainPageState extends State<MainPage> {
     final prefs = await SharedPreferences.getInstance();
 
     var username = prefs.getString("FlutterUsername") ?? "Name";
-    //print("In memory $username");
     userNameController.text = username;
   }
 
@@ -140,25 +138,6 @@ class _MainPageState extends State<MainPage> {
         })
     );
   }
-
-  // Future<void> addUser() {
-  //   CollectionReference db = FirebaseFirestore.instance.collection("gamesFlutter");
-  //   // Call the user's CollectionReference to add a new user
-  //
-  //   var listClick = [];
-  //   Map<String, int> click = {"jjji": 1};
-  //   listClick.add(click);
-  //
-  //
-  //   return db
-  //       .add({
-  //     'complete': true, // John Doe
-  //     'company': 1, // Stokes and Sons
-  //     'buttonList': listClick // 42
-  //   })
-  //       .then((value) => print("User Added"))
-  //       .catchError((error) => print("Failed to add user: $error"));
-  // }
 
   @override
   Widget build(BuildContext context) {

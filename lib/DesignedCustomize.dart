@@ -54,23 +54,6 @@ class _CustomizeDesignedState extends State<CustomizeDesigned> {
                     children: [
                       RadioListTile(
                           title: const Text(
-                            "1 Pair(s)",
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold
-                            ),
-                          ),
-                          value: 1,
-                          groupValue: buttonPairNum,
-                          onChanged: (value) {
-                            setState(() {
-                              this.buttonPairNum = value as int;
-                              debugResult();
-                            });
-                          }
-                      ),
-                      RadioListTile(
-                          title: const Text(
                             "2 Pair(s)",
                             style: TextStyle(
                                 fontSize: 24,
@@ -95,6 +78,40 @@ class _CustomizeDesignedState extends State<CustomizeDesigned> {
                             ),
                           ),
                           value: 3,
+                          groupValue: buttonPairNum,
+                          onChanged: (value) {
+                            setState(() {
+                              this.buttonPairNum = value as int;
+                              debugResult();
+                            });
+                          }
+                      ),
+                      RadioListTile(
+                          title: const Text(
+                            "4 Pair(s)",
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold
+                            ),
+                          ),
+                          value: 4,
+                          groupValue: buttonPairNum,
+                          onChanged: (value) {
+                            setState(() {
+                              this.buttonPairNum = value as int;
+                              debugResult();
+                            });
+                          }
+                      ),
+                      RadioListTile(
+                          title: const Text(
+                            "5 Pair(s)",
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold
+                            ),
+                          ),
+                          value: 5,
                           groupValue: buttonPairNum,
                           onChanged: (value) {
                             setState(() {
@@ -143,7 +160,7 @@ class _CustomizeDesignedState extends State<CustomizeDesigned> {
             Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(48, 260, 50, 24),
+                  padding: const EdgeInsets.fromLTRB(48, 200, 50, 24),
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -159,9 +176,10 @@ class _CustomizeDesignedState extends State<CustomizeDesigned> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(376, 260, 0, 24),
+                  padding: const EdgeInsets.fromLTRB(376, 200, 0, 24),
                   child: ElevatedButton(
                     onPressed: () {
+                      Navigator.pop(context);
                       Navigator.push(context, MaterialPageRoute(
                           builder: (context) {
                             return GamePage(
