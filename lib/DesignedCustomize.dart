@@ -179,8 +179,7 @@ class _CustomizeDesignedState extends State<CustomizeDesigned> {
                   padding: const EdgeInsets.fromLTRB(376, 200, 0, 24),
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(
+                      Navigator.pushReplacement(context, MaterialPageRoute(
                           builder: (context) {
                             return GamePage(
                               gameType: false,

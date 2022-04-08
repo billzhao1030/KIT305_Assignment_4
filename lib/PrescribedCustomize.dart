@@ -466,7 +466,7 @@ class _CustomizePrescribedState extends State<CustomizePrescribed> {
                     padding: const EdgeInsets.fromLTRB(376, 32, 0, 24),
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(
+                        Navigator.pushReplacement(context, MaterialPageRoute(
                             builder: (context) {
                               return GamePage(
                                 gameType: this.gameType,

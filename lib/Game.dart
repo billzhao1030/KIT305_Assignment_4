@@ -1,5 +1,8 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+
+import 'main.dart';
 
 class Game {
   String id = "";
@@ -13,7 +16,7 @@ class Game {
 
   int repetition = 0;
 
-  //List<Map<String, int>?> buttonList = [];
+  List<Map<String, int>> buttonList = [];
 
   Game();
 
@@ -39,7 +42,15 @@ class Game {
       gameType = json['gameType'],
       gameMode = json['gameMode'],
       completed = json['completed'],
-      repetition = json['repetition'];
+      repetition = json['repetition']
+      {
+        buttonList = [];
+        (json['buttonList']).forEach((element) {
+          buttonList.add(Map.from(element));
+        });
+
+        //print(buttonList.runtimeType);
+      }
 
   Map<String, dynamic> toJson() =>
       {
@@ -54,8 +65,48 @@ class Game {
 
 class GameModel extends ChangeNotifier {
   final List<Game> gameList = [];
+  int prescribedTotal = 0;
+  int designedTotal = 0;
 
+  bool loading = false;
 
+  CollectionReference db = FirebaseFirestore.instance.collection(DATABASE);
+
+  GameModel() {
+    fetch();
+  }
+
+  Future fetch() async {
+    gameList.clear();
+    loading = true;
+
+    prescribedTotal = 0;
+    designedTotal = 0;
+
+    notifyListeners();
+
+    var gameDoc = await db.get();
+
+    gameDoc.docs.forEach((doc) {
+      var game = Game.fromJson(doc.data()! as Map<String, dynamic>, doc.id);
+
+      var repetition = game.repetition;
+
+      if (game.gameType == true) {
+        prescribedTotal += repetition;
+      } else {
+        designedTotal += repetition;
+      }
+
+      gameList.add(game);
+    });
+
+    await Future.delayed(Duration(seconds: 1));
+
+    loading = false;
+
+    notifyListeners();
+  }
 }
 
 

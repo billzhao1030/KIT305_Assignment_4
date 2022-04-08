@@ -12,7 +12,18 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+      body: Center(
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              child: Text("Back")
+            )
+          ],
+        ),
+      ),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Game.dart';
@@ -33,12 +34,15 @@ class MyApp extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
-          return MaterialApp(
-            title: 'Assignment App',
-            theme: ThemeData(
-              primarySwatch: Colors.amber,
+          return ChangeNotifierProvider(
+            create: (context) => GameModel(),
+            child: MaterialApp(
+              title: 'Assignment App',
+              theme: ThemeData(
+                primarySwatch: Colors.amber,
+              ),
+              home: const MainPage(),
             ),
-            home: const MainPage(),
           );
         } else {
           return Container();
@@ -72,30 +76,33 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    setSummary();
+
     userNameController.addListener(updateUsername);
   }
 
-  void setSummary() async {
-    CollectionReference db = FirebaseFirestore.instance.collection("gamesFlutter");
-
-    var gameDoc = await db.get();
-
-    gameDoc.docs.forEach((doc) {
-      var game = Game.fromJson(doc.data()! as Map<String, dynamic>, doc.id);
-
-      var repetition = game.repetition;
-
-      if (game.gameType == true) {
-        prescribedTotal += repetition;
-      } else {
-        designedTotal += repetition;
-      }
-    });
-
-    summary = "You have completed\n ${prescribedTotal} repetitions in Number In Order\n "
-        "${designedTotal} repetitions in Matching Numbers";
-  }
+  // Future<void> setSummary() async {
+  //   CollectionReference db = FirebaseFirestore.instance.collection(DATABASE);
+  //
+  //   var gameDoc = await db.get();
+  //
+  //   prescribedTotal = 0;
+  //   designedTotal = 0;
+  //
+  //   gameDoc.docs.forEach((doc) {
+  //     var game = Game.fromJson(doc.data()! as Map<String, dynamic>, doc.id);
+  //
+  //     var repetition = game.repetition;
+  //
+  //     if (game.gameType == true) {
+  //       prescribedTotal += repetition;
+  //     } else {
+  //       designedTotal += repetition;
+  //     }
+  //   });
+  //
+  //   summary = "You have completed\n ${prescribedTotal} repetitions in Number In Order\n "
+  //       "${designedTotal} repetitions in Matching Numbers";
+  // }
 
   @override
   void dispose() {
@@ -141,130 +148,141 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: getName(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return FullScreenText(text: "Something went wrong");
-        }
-
-        if (snapshot.connectionState == ConnectionState.done) {
-          return Scaffold(
-            body: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Padding(padding: EdgeInsets.all(8.0)),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      "Stroke Rehabilitation Exercise",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 48,
-                          fontStyle: FontStyle.italic,
-                          color: Color.alphaBlend(Colors.black, Colors.blue)
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Text(
-                      "Enter your name here",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 28,
-                          color: Colors.black54
-                      ),
-                    ),
-                  ),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: SizedBox(
-                        width: 250,
-                        child: TextField(
-                          controller: userNameController,
-                          decoration: const InputDecoration(
-                              hintText: "Your Name",
-                              labelText: "",
-                              border: OutlineInputBorder()
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLength: 24,
-                          maxLines: 1,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding( // Game 1
-                    padding: const EdgeInsets.all(36.0),
-                    child: Center(
-                      child: SizedBox(
-                        width: 500,
-                        height: 100,
-                        child: ElevatedButton(
-                          onPressed: customizePrescribed,
-                          style: style,
-                          child: Text("Number In Order"),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding( // Game 2
-                    padding: const EdgeInsets.all(36.0),
-                    child: Center(
-                      child: SizedBox(
-                        width: 500,
-                        height: 100,
-                        child: ElevatedButton(
-                          onPressed: customizeDesigned,
-                          style: style,
-                          child: Text("Matching Numbers"),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding( // History
-                    padding: const EdgeInsets.all(36.0),
-                    child: Center(
-                      child: SizedBox(
-                        width: 500,
-                        height: 100,
-                        child: ElevatedButton(
-                          onPressed: seeHistory,
-                          style: style,
-                          child: Text("Exercise History"),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      summary,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontStyle: FontStyle.italic,
-                        fontSize: 28,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        } else {
-          return Container();
-        }
-      }
+    return Consumer<GameModel> (
+      builder: buildMain,
     );
+  }
+
+  Scaffold buildMain(BuildContext context, GameModel gameModel, _) {
+    return Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Padding(padding: EdgeInsets.all(8.0)),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    "Stroke Rehabilitation Exercise",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 48,
+                        fontStyle: FontStyle.italic,
+                        color: Color.alphaBlend(Colors.black, Colors.blue)
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Text(
+                    "Enter your name here",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28,
+                        color: Colors.black54
+                    ),
+                  ),
+                ),
+                Center(
+                  child: FutureBuilder(
+                    future: getName(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return FullScreenText(text: "Can't get username");
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return nameField();
+                      } else {
+                        return nameField();
+                      }
+                    }
+                  ),
+                ),
+                Padding( // Game 1
+                  padding: const EdgeInsets.all(36.0),
+                  child: Center(
+                    child: SizedBox(
+                      width: 500,
+                      height: 100,
+                      child: ElevatedButton(
+                        onPressed: customizePrescribed,
+                        style: style,
+                        child: Text("Number In Order"),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding( // Game 2
+                  padding: const EdgeInsets.all(36.0),
+                  child: Center(
+                    child: SizedBox(
+                      width: 500,
+                      height: 100,
+                      child: ElevatedButton(
+                        onPressed: customizeDesigned,
+                        style: style,
+                        child: Text("Matching Numbers"),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding( // History
+                  padding: const EdgeInsets.all(36.0),
+                  child: Center(
+                    child: SizedBox(
+                      width: 500,
+                      height: 100,
+                      child: ElevatedButton(
+                        onPressed: seeHistory,
+                        style: style,
+                        child: Text("Exercise History"),
+                      ),
+                    ),
+                  ),
+                ),
+                if (gameModel.loading) CircularProgressIndicator() else Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    "You have completed\n ${gameModel.prescribedTotal} repetitions in Number In Order\n "
+                           "${gameModel.designedTotal} repetitions in Matching Numbers",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontStyle: FontStyle.italic,
+                      fontSize: 28,
+                    ),
+                  )
+                ),
+              ],
+            ),
+          ),
+        );
+  }
+
+  Padding nameField() {
+    return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: 250,
+                    child: TextField(
+                      controller: userNameController,
+                      decoration: const InputDecoration(
+                          hintText: "Your Name",
+                          labelText: "",
+                          border: OutlineInputBorder()
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLength: 24,
+                      maxLines: 1,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20
+                      ),
+                    ),
+                  ),
+                );
   }
 }
 

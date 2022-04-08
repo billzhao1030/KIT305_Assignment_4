@@ -407,11 +407,8 @@ class _GamePageState extends State<GamePage> {
                         if (completed == true) {
                           completeGame();
                         } else {
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) {
-                                return MainPage();
-                              })
-                          );
+                          Navigator.pop(context);
+                          Navigator.pop(context);
                         }
                       },
                       child: Text(
@@ -594,7 +591,7 @@ class _GamePageState extends State<GamePage> {
         .then((value) => print("Game updated"))
         .catchError((error) => print("Failed to update game: ${error}"));
 
-    Navigator.push(context, MaterialPageRoute(
+    Navigator.pushReplacement(context, MaterialPageRoute(
         builder: (context) {
           return GameFinishPage(
             id: this.id,
