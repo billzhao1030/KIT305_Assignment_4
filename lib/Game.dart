@@ -107,6 +107,10 @@ class GameModel extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  void update() {
+    notifyListeners();
+  }
 }
 
 

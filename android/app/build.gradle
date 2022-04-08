@@ -54,7 +54,7 @@ android {
 
         multiDexEnabled true
 
-        minSdkVersion 19
+        minSdkVersion 21
     }
 
     buildTypes {

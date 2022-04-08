@@ -9,6 +9,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:share_plus/share_plus.dart';
+
 import 'Game.dart';
 
 const String DATABASE = "gamesFlutter";
@@ -80,30 +82,6 @@ class _MainPageState extends State<MainPage> {
     userNameController.addListener(updateUsername);
   }
 
-  // Future<void> setSummary() async {
-  //   CollectionReference db = FirebaseFirestore.instance.collection(DATABASE);
-  //
-  //   var gameDoc = await db.get();
-  //
-  //   prescribedTotal = 0;
-  //   designedTotal = 0;
-  //
-  //   gameDoc.docs.forEach((doc) {
-  //     var game = Game.fromJson(doc.data()! as Map<String, dynamic>, doc.id);
-  //
-  //     var repetition = game.repetition;
-  //
-  //     if (game.gameType == true) {
-  //       prescribedTotal += repetition;
-  //     } else {
-  //       designedTotal += repetition;
-  //     }
-  //   });
-  //
-  //   summary = "You have completed\n ${prescribedTotal} repetitions in Number In Order\n "
-  //       "${designedTotal} repetitions in Matching Numbers";
-  // }
-
   @override
   void dispose() {
     userNameController.dispose();
@@ -138,12 +116,13 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  void seeHistory() {
-    Navigator.push(context, MaterialPageRoute(
-        builder: (context) {
-          return HistoryPage();
-        })
-    );
+  void seeHistory() async {
+    // Navigator.push(context, MaterialPageRoute(
+    //     builder: (context) {
+    //       return HistoryPage();
+    //     })
+    // );
+    await Share.share("jjjj");
   }
 
   @override

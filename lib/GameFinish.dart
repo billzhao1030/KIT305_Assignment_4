@@ -2,6 +2,7 @@ import 'package:assignment4/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:assignment4/Game.dart';
+import 'package:provider/provider.dart';
 
 class GameFinishPage extends StatefulWidget {
   final bool gameType;
@@ -54,72 +55,77 @@ class _GameFinishPageState extends State<GameFinishPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 32, 0, 16),
-              child: summaryTxt == "" ? FutureBuilder(
-                future: setSummary(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return FullScreenText(text: "Wrong game!");
-                  }
+    return Consumer<GameModel>(builder: buildFinish);
+  }
 
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    return buildText();
-                  } else {
-                    return Center(child: CircularProgressIndicator(),);
-                  }
+  Scaffold buildFinish(BuildContext context, GameModel gameModel, _) {
+    return Scaffold(
+    body: Center(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 32, 0, 16),
+            child: summaryTxt == "" ? FutureBuilder(
+              future: setSummary(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return FullScreenText(text: "Wrong game!");
                 }
-              ) : buildText(),
+
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return buildText();
+                } else {
+                  return Center(child: CircularProgressIndicator(),);
+                }
+              }
+            ) : buildText(),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: SizedBox(
+                width: 370,
+                height: 80,
+                child: ElevatedButton(
+                  onPressed: (){
+                    if (hasPicture == false) {
+                      setState(() {
+                        hasPicture = true;
+                      });
+                    } else {
+                      gameModel.fetch();
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    }
+                  },
+                    style: btnStyle,
+                  child: Text(
+                    hasPicture ? "Go to menu" : "Take Picture"
+                  )
+                ),
+              ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: SizedBox(
-                  width: 370,
-                  height: 80,
-                  child: ElevatedButton(
-                    onPressed: (){
-                      if (hasPicture == false) {
-                        setState(() {
-                          hasPicture = true;
-                        });
-                      } else {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      }
-                    },
-                      style: btnStyle,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: SizedBox(
+                width: 370,
+                height: 80,
+                child: ElevatedButton(
+                    onPressed: (){},
+                    style: btnStyle,
                     child: Text(
-                      hasPicture ? "Go to menu" : "Take Picture"
+                        "Select Picture"
                     )
-                  ),
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: SizedBox(
-                  width: 370,
-                  height: 80,
-                  child: ElevatedButton(
-                      onPressed: (){},
-                      style: btnStyle,
-                      child: Text(
-                          "Select Picture"
-                      )
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
+    ),
+  );
   }
 
   Text buildText() {

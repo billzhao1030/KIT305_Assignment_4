@@ -2,12 +2,14 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:assignment4/Game.dart';
 import 'package:assignment4/GameFinish.dart';
 import 'package:assignment4/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class GamePage extends StatefulWidget {
   final bool gameType;
@@ -382,81 +384,86 @@ class _GamePageState extends State<GamePage> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return Expanded(
-          child: SimpleDialog(
-            title: Text(
-              'Pause',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic,
-                fontSize: 40
-              ),
-            ),
-            children:[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SizedBox(
-                  width: 350,
-                  height: 100,
-                  child: SimpleDialogOption(
-                    onPressed: () {},
-                    child: ElevatedButton(
-                      onPressed: () {
-                        uploadRound();
-                        if (completed == true) {
-                          completeGame();
-                        } else {
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: Text(
-                        completed ? "Finish Exercise" : "Go back to menu",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
-                    )
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SizedBox(
-                  width: 350,
-                  height: 100,
-                  child: SimpleDialogOption(
-                    onPressed: () {},
-                    child: ElevatedButton(
-                      onPressed: (){
-                        Navigator.pop(context);
-                        uploadRound();
-                        if (widget.gameType == true &&
-                            widget.gameMode == true && widget.isRound == false) {
-                          startTimer();
-                        }
-                      },
-                      child: Text(
-                        'Continue Exercise',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
-                    )
-                  ),
-                ),
-              ),
-            ],
-            elevation: 10,
-          ),
-        );
+        return Consumer<GameModel>(builder: dialogPanel);
       },
     );
+  }
+
+  Expanded dialogPanel(BuildContext context, GameModel gameModel, _) {
+    return Expanded(
+        child: SimpleDialog(
+          title: Text(
+            'Pause',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontStyle: FontStyle.italic,
+              fontSize: 40
+            ),
+          ),
+          children:[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: 350,
+                height: 100,
+                child: SimpleDialogOption(
+                  onPressed: () {},
+                  child: ElevatedButton(
+                    onPressed: () {
+                      uploadRound();
+                      if (completed == true) {
+                        completeGame();
+                      } else {
+                        gameModel.fetch();
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Text(
+                      completed ? "Finish Exercise" : "Go back to menu",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  )
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: 350,
+                height: 100,
+                child: SimpleDialogOption(
+                  onPressed: () {},
+                  child: ElevatedButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                      uploadRound();
+                      if (widget.gameType == true &&
+                          widget.gameMode == true && widget.isRound == false) {
+                        startTimer();
+                      }
+                    },
+                    child: Text(
+                      'Continue Exercise',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  )
+                ),
+              ),
+            ),
+          ],
+          elevation: 10,
+        ),
+      );
   }
 
   void reposition() {
