@@ -90,9 +90,18 @@ class Game {
           buttonList.add(Map.from(element));
         });
 
+        totalClick = 0;
+        righClick = 0;
         for (var clicks in buttonList) {
-          print(clicks);
+          totalClick++;
+          if (!(clicks.values.contains(10) || clicks.values.contains(20) ||
+              clicks.values.contains(30) || clicks.values.contains(40) ||
+              clicks.values.contains(50))) {
+            righClick++;
+          }
         }
+        print("Total: ${totalClick}");
+        print("Right: ${righClick}");
       }
 
   Map<String, dynamic> toJson() =>
@@ -122,6 +131,7 @@ class GameModel extends ChangeNotifier {
 
   GameModel() {
     fetch();
+    fetchDisplay(true, "");
   }
 
   Future fetch() async {
@@ -149,15 +159,34 @@ class GameModel extends ChangeNotifier {
       gameList.add(game);
     });
 
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(Duration(milliseconds: 400));
 
     loading = false;
 
     notifyListeners();
   }
 
-  Future fetchDisplay() async {
+  Future fetchDisplay(bool gameType, String searchStr) async {
+    subList.clear();
+    loading = true;
 
+    notifyListeners();
+
+    var gameDoc = await db.get();
+
+    gameDoc.docs.forEach((doc) {
+      var game = Game.fromJson(doc.data()! as Map<String, dynamic>, doc.id);
+
+      if (game.gameType == gameType && game.id.contains(searchStr)) {
+        subList.add(game);
+      }
+    });
+
+    await Future.delayed(Duration(milliseconds: 400));
+
+    loading = false;
+
+    notifyListeners();
   }
 
   void update() {
