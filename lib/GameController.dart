@@ -606,6 +606,7 @@ class _GamePageState extends State<GamePage> {
             isFree: widget.isFree,
             gameMode: widget.gameMode,
             gameType: widget.gameType,
+            completed: completed
           );
         })
     );

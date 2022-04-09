@@ -9,6 +9,7 @@ class GameFinishPage extends StatefulWidget {
   final bool gameMode;
   final bool isFree;
   final bool isRound;
+  final bool completed;
 
   final String id;
 
@@ -18,7 +19,8 @@ class GameFinishPage extends StatefulWidget {
     required this.gameMode,
     required this.isFree,
     required this.isRound,
-    required this.id
+    required this.id,
+    required this.completed
   }) : super(key: key);
 
   @override
@@ -48,9 +50,7 @@ class _GameFinishPageState extends State<GameFinishPage> {
 
     var game  = Game.fromJson(gameDoc.data()! as Map<String, dynamic>, gameDoc.id);
 
-    print(game.toDebug());
-
-    summaryTxt = game.toDebug();
+    summaryTxt = game.toSummary(widget.isRound, widget.isFree, widget.completed);
   }
 
   @override
@@ -93,9 +93,9 @@ class _GameFinishPageState extends State<GameFinishPage> {
                         hasPicture = true;
                       });
                     } else {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
                       gameModel.fetch();
-                      Navigator.pop(context);
-                      Navigator.pop(context);
                     }
                   },
                     style: btnStyle,
