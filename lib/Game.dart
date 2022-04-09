@@ -45,7 +45,7 @@ class Game {
     for (var click in buttonList) {
       var time = "${click.keys}";
       var button = "${click.values}";
-      buttonClickStr += "${time} : ${button}";
+      buttonClickStr += "${time} : ${button}, ";
     }
     buttonClickStr += "}";
 
@@ -100,8 +100,6 @@ class Game {
             righClick++;
           }
         }
-        print("Total: ${totalClick}");
-        print("Right: ${righClick}");
       }
 
   Map<String, dynamic> toJson() =>
@@ -116,11 +114,8 @@ class Game {
 }
 
 class GameModel extends ChangeNotifier {
-  final List<Game> gameList = [];
-  final List<Game> prescribedList = [];
-  final List<Game> designedList = [];
-
-  final List<Game> subList = [];
+  List<Game> gameList = [];
+  List<Game> subList = [];
 
   int prescribedTotal = 0;
   int designedTotal = 0;
@@ -159,7 +154,7 @@ class GameModel extends ChangeNotifier {
       gameList.add(game);
     });
 
-    await Future.delayed(Duration(milliseconds: 400));
+    await Future.delayed(Duration(milliseconds: 1000));
 
     loading = false;
 
@@ -178,19 +173,21 @@ class GameModel extends ChangeNotifier {
       var game = Game.fromJson(doc.data()! as Map<String, dynamic>, doc.id);
 
       if (game.gameType == gameType && game.id.contains(searchStr)) {
+        print(game.id);
         subList.add(game);
       }
     });
 
-    await Future.delayed(Duration(milliseconds: 400));
+    await Future.delayed(Duration(milliseconds: 1000));
 
     loading = false;
 
     notifyListeners();
   }
 
-  void update() {
-    notifyListeners();
+  Future delete(String id) async {
+    await db.doc(id).delete();
+    await Future.delayed(Duration(milliseconds: 1000));
   }
 }
 

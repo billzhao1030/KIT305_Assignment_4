@@ -1,8 +1,13 @@
 import 'package:assignment4/main.dart';
+import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:assignment4/Game.dart';
 import 'package:provider/provider.dart';
+
+import 'package:image_picker/image_picker.dart';
+
+import 'dart:io';
 
 class GameFinishPage extends StatefulWidget {
   final bool gameType;
@@ -31,6 +36,8 @@ class _GameFinishPageState extends State<GameFinishPage> {
   String summaryTxt = "";
   bool hasPicture = false;
   CollectionReference games = FirebaseFirestore.instance.collection(DATABASE);
+
+  String gamePicture = "";
 
   final ButtonStyle btnStyle =
   ElevatedButton.styleFrom(
@@ -87,20 +94,12 @@ class _GameFinishPageState extends State<GameFinishPage> {
                 width: 370,
                 height: 80,
                 child: ElevatedButton(
-                  onPressed: (){
-                    if (hasPicture == false) {
-                      setState(() {
-                        hasPicture = true;
-                      });
-                    } else {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                      gameModel.fetch();
-                    }
+                  onPressed: () async {
+                    takePicture();
                   },
                     style: btnStyle,
                   child: Text(
-                    hasPicture ? "Go to menu" : "Take Picture"
+                    "Take Picture"
                   )
                 ),
               ),
@@ -113,7 +112,9 @@ class _GameFinishPageState extends State<GameFinishPage> {
                 width: 370,
                 height: 80,
                 child: ElevatedButton(
-                    onPressed: (){},
+                    onPressed: () async {
+                      getFromGallery();
+                    },
                     style: btnStyle,
                     child: Text(
                         "Select Picture"
@@ -122,6 +123,32 @@ class _GameFinishPageState extends State<GameFinishPage> {
               ),
             ),
           ),
+          !hasPicture ? Container() : Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: SizedBox(
+                width: 370,
+                height: 80,
+                child: ElevatedButton(
+                    onPressed: () async {
+                      await gameModel.fetch();
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    style: btnStyle,
+                    child: Text(
+                        "Go to Menu"
+                    )
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              child: gamePicture.isEmpty ? Container() : Image.file(File(gamePicture)),
+            ),
+          )
         ],
       ),
     ),
@@ -139,6 +166,35 @@ class _GameFinishPageState extends State<GameFinishPage> {
                   );
   }
 
+  void takePicture() async {
+    final camera = await availableCameras();
+
+    final firstCamera = camera.first;
+    var image = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => TakePictureScreen(camera: firstCamera))
+    );
+    setState(() {
+      gamePicture = image;
+      hasPicture = true;
+    });
+  }
+
+  void getFromGallery() async {
+    PickedFile? pickedFile = await ImagePicker().getImage(
+      source: ImageSource.gallery,
+      maxHeight: 400,
+      maxWidth: 400,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        gamePicture = pickedFile.path;
+      });
+    }
+  }
+
   void debugResult() {
     print("=====");
     print("gameType ${widget.gameType}");
@@ -149,3 +205,60 @@ class _GameFinishPageState extends State<GameFinishPage> {
     print("id ${widget.id}");
   }
 }
+
+class TakePictureScreen extends StatefulWidget {
+  final CameraDescription camera;
+  const TakePictureScreen({Key? key, required this.camera}) : super(key: key);
+
+  @override
+  State<TakePictureScreen> createState() => _TakePictureScreenState();
+}
+
+class _TakePictureScreenState extends State<TakePictureScreen> {
+  late CameraController _controller;
+  late Future<void> _initializeControllerFuture;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = CameraController(widget.camera, ResolutionPreset.medium);
+    _initializeControllerFuture = _controller.initialize();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: FutureBuilder<void>(
+        future: _initializeControllerFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return CameraPreview(_controller);
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.camera_alt),
+        onPressed: () async {
+          try {
+            await _initializeControllerFuture;
+
+            final image = await _controller.takePicture();
+            Navigator.pop(context, image.path);
+          } catch (e) {
+            print(e);
+          }
+        },
+      ),
+    );
+  }
+}
+

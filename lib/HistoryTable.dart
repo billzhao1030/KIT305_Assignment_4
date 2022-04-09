@@ -1,6 +1,7 @@
 
 import 'package:assignment4/Game.dart';
 import 'package:assignment4/HistoryDetails.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -65,12 +66,15 @@ class _HistoryPageState extends State<HistoryPage> {
                       primary: (historyType == true) ? Colors.deepOrange : Colors.amber,
                       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                       textStyle: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                  onPressed: (){
+                  onPressed: () async {
                     if (historyType == false) {
                       setState(() {
                         historyType = true;
-                        gameModel.fetchDisplay(historyType, "");
+                        searchTxtController.text = "";
                       });
+
+                      await gameModel.fetchDisplay(historyType, "");
+                      print("display item: ${gameModel.subList.length}");
                     }
                   },
                   child: Text("Number in order")
@@ -83,12 +87,14 @@ class _HistoryPageState extends State<HistoryPage> {
                       primary: (historyType == false) ? Colors.deepOrange : Colors.amber,
                       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                       textStyle: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                  onPressed: (){
+                  onPressed: ()  async {
                     if (historyType == true) {
                       setState(() {
                         historyType = false;
-                        gameModel.fetchDisplay(historyType, "");
+                        searchTxtController.text = "";
                       });
+                      await gameModel.fetchDisplay(historyType, "");
+                      print("display item: ${gameModel.subList.length}");
                     }
                   },
                   child: Text("Matching numbers")
@@ -126,8 +132,10 @@ class _HistoryPageState extends State<HistoryPage> {
                             primary: Colors.amber,
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                             textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        onPressed: () {
-                          gameModel.fetchDisplay(historyType, searchTxtController.text);
+                        onPressed: () async {
+                          await gameModel.fetchDisplay(historyType, searchTxtController.text);
+
+                          print("display item: ${gameModel.subList.length}");
                         },
                         child: Text("Search"),
                       ),
@@ -142,9 +150,11 @@ class _HistoryPageState extends State<HistoryPage> {
                             primary: Colors.amber,
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                             textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        onPressed: () {
+                        onPressed: () async {
                           searchTxtController.text = "";
-                          gameModel.fetchDisplay(historyType, "");
+                          await gameModel.fetchDisplay(historyType, "");
+
+                          print("display item: ${gameModel.subList.length}");
                         },
                         child: Text("See All"),
                       ),
@@ -175,17 +185,43 @@ class _HistoryPageState extends State<HistoryPage> {
                       itemBuilder: (_, index) {
                         var _gameRow  = gameModel.subList[index];
                         return ListTile(
-                          title: Text(_gameRow.id),
-                          subtitle: Text(_gameRow.startTime),
+                          leading: SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: Container(
+                              color: (_gameRow.gameType) ? ((_gameRow.gameMode) ? Colors.lightGreen : Colors.purpleAccent) : Colors.purpleAccent,
+                            ),
+                          ),
+                          title: Text(
+                            "${index+1}. ${(_gameRow.gameMode) ? "Goal Mode" : "Free Mode"}",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold
+                            ),
+                          ),
+                          subtitle: Text(
+                            "Start at: ${_gameRow.startTime}\nEnd at: ${_gameRow.endTime}\n" +
+                            "Repetition: ${_gameRow.repetition}   Completed: ${_gameRow.completed ? "Yes":"No"}",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          trailing: Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.black54,
+                            size: 36,
+                          ),
                           onTap: (){
-                            print(_gameRow.righClick);
-                            print(_gameRow.totalClick);
                             Navigator.push(context, MaterialPageRoute(
                                 builder: (context) {
                                   return HistoryDetail(
                                     id: _gameRow.id,
                                     index: index,
-                                    gameType: _gameRow.gameType
+                                    gameType: _gameRow.gameType,
+                                    searchTxt: searchTxtController.text,
                                   );
                                 })
                             );
