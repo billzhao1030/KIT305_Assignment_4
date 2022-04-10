@@ -34,6 +34,9 @@ class _HistoryDetailState extends State<HistoryDetail> {
   @override
   Widget build(BuildContext context) {
     var games = Provider.of<GameModel>(context, listen: false).subList;
+
+    print("in detail: ${games.length}");
+
     var game = games[widget.index];
     return Scaffold(
       body: Center(
@@ -94,27 +97,29 @@ class _HistoryDetailState extends State<HistoryDetail> {
               ],
             ),
 
+            Text(game.id, style: TextStyle(fontSize: 36),),
+
             FutureBuilder(
               future: downloadImage(),
               builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                 if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
                   return Container(
-                    width: 300,
-                    height: 300,
+                    width: 250,
+                    height: 250,
                     child: Image.network(snapshot.data!, fit: BoxFit.cover),
                   );
                 }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Container(
-                    width: 300,
-                    height: 300,
+                    width: 250,
+                    height: 250,
                     child: Center(child: CircularProgressIndicator(),),
                   );
                 }
 
                 return Container(
-                  width: 300,
-                  height: 300,
+                  width: 250,
+                  height: 250,
                   child: Text("nope"),
                 );
               },

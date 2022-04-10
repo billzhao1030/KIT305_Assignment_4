@@ -218,7 +218,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           onTap: (){
                             print(_gameRow.id);
                             print(index);
-                            print(gameModel.subList[8].toShare());
+                            print(gameModel.subList.length);
+
+
                             Navigator.push(context, MaterialPageRoute(
                                 builder: (context) {
                                   return HistoryDetail(
