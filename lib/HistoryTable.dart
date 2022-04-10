@@ -184,6 +184,7 @@ class _HistoryPageState extends State<HistoryPage> {
                       scrollDirection: Axis.vertical,
                       itemBuilder: (_, index) {
                         var _gameRow  = gameModel.subList[index];
+
                         return ListTile(
                           leading: SizedBox(
                             width: 30,
@@ -215,6 +216,9 @@ class _HistoryPageState extends State<HistoryPage> {
                             size: 36,
                           ),
                           onTap: (){
+                            print(_gameRow.id);
+                            print(index);
+                            print(gameModel.subList[8].toShare());
                             Navigator.push(context, MaterialPageRoute(
                                 builder: (context) {
                                   return HistoryDetail(

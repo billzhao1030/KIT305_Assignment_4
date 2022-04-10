@@ -1,4 +1,5 @@
 import 'package:assignment4/Game.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -92,22 +93,45 @@ class _HistoryDetailState extends State<HistoryDetail> {
                 ),
               ],
             ),
-            Text(widget.id,
-            style: TextStyle(
-              fontSize: 36
-            ),)
-            // ListView.builder(
-            //   itemBuilder: (_, index) {
-            //     return ListTile(
-            //
-            //     );
-            //   },
-            //   itemCount: game.buttonList.length,
-            // )
+
+            FutureBuilder(
+              future: downloadImage(),
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                  return Container(
+                    width: 300,
+                    height: 300,
+                    child: Image.network(snapshot.data!, fit: BoxFit.cover),
+                  );
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    width: 300,
+                    height: 300,
+                    child: Center(child: CircularProgressIndicator(),),
+                  );
+                }
+
+                return Container(
+                  width: 300,
+                  height: 300,
+                  child: Text("nope"),
+                );
+              },
+            ),
+
+            widget.gameType == true ? prescribedHistory(game: game, id: widget.id,) : Container(),
+
           ],
         ),
       ),
     );
+  }
+
+  Future<String> downloadImage() async {
+    String url = await FirebaseStorage.instance.ref("imageFlutter/${widget.id}.jpg").getDownloadURL();
+
+    return url;
   }
 
   deleteDialog(BuildContext context) {
@@ -166,5 +190,81 @@ class _HistoryDetailState extends State<HistoryDetail> {
     print("*****");
     print("ID: ${widget.id}");
     print("Game: ${Provider.of<GameModel>(context, listen: false).subList[widget.index]}");
+  }
+}
+
+class prescribedHistory extends StatelessWidget {
+  const prescribedHistory({
+    Key? key,
+    required this.game, required this.id,
+  }) : super(key: key);
+
+  final Game game;
+  final String id;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            "Total Click: ${game.totalClick}",
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            "Right Click: ${game.rightClick}",
+            style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+          child: Text(
+            "Button Click List:",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 36
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 400,
+          height: 360,
+          child: ListView.builder(
+            itemBuilder: (_, index) {
+              var _perClick = game.buttonList[index];
+
+              var time = _perClick.keys.toString().substring(1, 9);
+              var buttonLength = _perClick.values.toString().length;
+
+              var button = _perClick.values.toString().substring(1, buttonLength-1);
+
+              return ListTile(
+                title: Text(
+                  "${time} : button ${button.substring(0, 1)}",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: (button.length == 2) ? Colors.red : Colors.black,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontStyle: FontStyle.italic
+                  ),
+                ),
+              );
+            },
+            itemCount: game.totalClick,
+          ),
+        )
+      ],
+    );
   }
 }

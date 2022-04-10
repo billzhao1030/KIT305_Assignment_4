@@ -19,7 +19,7 @@ class Game {
   List<Map<String, int>> buttonList = [];
 
   int totalClick = 0;
-  int righClick = 0;
+  int rightClick = 0;
 
   Game();
 
@@ -39,7 +39,7 @@ class Game {
 
   String toShare() {
     String type = (gameType == true) ? "number in order" : "matching numbers";
-    var complete = (completed == true) ? "" : "not";
+    var complete = (completed == true) ? "" : "not ";
 
     var buttonClickStr = "{";
     for (var click in buttonList) {
@@ -50,10 +50,10 @@ class Game {
     buttonClickStr += "}";
 
     var prescribed = (gameType == true) ? ", Total press of buttons: ${totalClick}, " +
-    "correct press of buttons: ${righClick}, The button list: ${buttonClickStr}" : "";
+    "correct press of buttons: ${rightClick}, The button list: ${buttonClickStr}" : "";
 
 
-    return "Exercise: ${type}, ${complete} completed, Start at ${startTime}, End at ${endTime}, " +
+    return "Exercise: ${type}, ${complete}completed, Start at ${startTime}, End at ${endTime}, " +
     "${repetition} round(s) in total${prescribed}";
   }
 
@@ -91,13 +91,13 @@ class Game {
         });
 
         totalClick = 0;
-        righClick = 0;
+        rightClick = 0;
         for (var clicks in buttonList) {
           totalClick++;
           if (!(clicks.values.contains(10) || clicks.values.contains(20) ||
               clicks.values.contains(30) || clicks.values.contains(40) ||
               clicks.values.contains(50))) {
-            righClick++;
+            rightClick++;
           }
         }
       }

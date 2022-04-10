@@ -22,7 +22,6 @@ dependencies:
   path_provider:
 
   firebase_core:
-
   firebase_storage:
   cloud_firestore:
 

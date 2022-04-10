@@ -6,6 +6,8 @@ import 'package:assignment4/Game.dart';
 import 'package:provider/provider.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 import 'dart:io';
 
@@ -175,23 +177,37 @@ class _GameFinishPageState extends State<GameFinishPage> {
         MaterialPageRoute(
             builder: (context) => TakePictureScreen(camera: firstCamera))
     );
+    if (image == null) return;
+
     setState(() {
       gamePicture = image;
       hasPicture = true;
     });
+
+    await uploadImage(image);
   }
 
   void getFromGallery() async {
-    PickedFile? pickedFile = await ImagePicker().getImage(
+    final image = await ImagePicker().pickImage(
       source: ImageSource.gallery,
       maxHeight: 400,
       maxWidth: 400,
     );
+    if (image == null) return;
 
-    if (pickedFile != null) {
-      setState(() {
-        gamePicture = pickedFile.path;
-      });
+    setState(() {
+      this.gamePicture = image.path;
+      hasPicture = true;
+    });
+
+    await uploadImage(image.path);
+  }
+
+  uploadImage(String imagePath) async {
+    try {
+      await FirebaseStorage.instance.ref('imageFlutter/${widget.id}.jpg').putFile(File(imagePath));
+    } on FirebaseException catch(e) {
+      print(e);
     }
   }
 
