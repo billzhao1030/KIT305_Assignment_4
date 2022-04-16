@@ -97,8 +97,6 @@ class _HistoryDetailState extends State<HistoryDetail> {
               ],
             ),
 
-            Text(game.id, style: TextStyle(fontSize: 36),),
-
             FutureBuilder(
               future: downloadImage(),
               builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
@@ -120,7 +118,16 @@ class _HistoryDetailState extends State<HistoryDetail> {
                 return Container(
                   width: 250,
                   height: 250,
-                  child: Text("nope"),
+                  child: Center(
+                    child: Text(
+                      "No Image! \nSince not completed\nor not saved!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold
+                      ),
+                    )
+                  ),
                 );
               },
             ),
@@ -134,7 +141,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
   }
 
   Future<String> downloadImage() async {
-    String url = await FirebaseStorage.instance.ref("imageFlutter/${widget.id}.jpg").getDownloadURL();
+    String? url = await FirebaseStorage.instance.ref("imageFlutter/${widget.id}.jpg").getDownloadURL();
 
     return url;
   }

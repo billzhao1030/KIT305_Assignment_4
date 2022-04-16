@@ -133,9 +133,12 @@ class _GameFinishPageState extends State<GameFinishPage> {
                 height: 80,
                 child: ElevatedButton(
                     onPressed: () async {
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) {
+                            return MainPage();
+                          })
+                      );
                       await gameModel.fetch();
-                      Navigator.pop(context);
-                      Navigator.pop(context);
                     },
                     style: btnStyle,
                     child: Text(

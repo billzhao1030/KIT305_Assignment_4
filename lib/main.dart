@@ -100,6 +100,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   void customizePrescribed() {
+    FocusScope.of(context).unfocus();
     Navigator.push(context, MaterialPageRoute(
         builder: (context) {
           return CustomizePrescribed();
@@ -108,20 +109,12 @@ class _MainPageState extends State<MainPage> {
   }
 
   void customizeDesigned() {
+    FocusScope.of(context).unfocus();
     Navigator.push(context, MaterialPageRoute(
         builder: (context) {
           return CustomizeDesigned();
         })
     );
-  }
-
-  void seeHistory() async {
-    Navigator.push(context, MaterialPageRoute(
-        builder: (context) {
-          return HistoryPage();
-        })
-    );
-    //await Share.share("jjjj");
   }
 
   @override
@@ -133,107 +126,117 @@ class _MainPageState extends State<MainPage> {
 
   Scaffold buildMain(BuildContext context, GameModel gameModel, _) {
     return Scaffold(
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Padding(padding: EdgeInsets.all(8.0)),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "Stroke Rehabilitation Exercise",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 48,
-                        fontStyle: FontStyle.italic,
-                        color: Color.alphaBlend(Colors.black, Colors.blue)
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Padding(padding: EdgeInsets.all(8.0)),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      "Stroke Rehabilitation Exercise",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 48,
+                          fontStyle: FontStyle.italic,
+                          color: Color.alphaBlend(Colors.black, Colors.blue)
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Text(
-                    "Enter your name here",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 28,
-                        color: Colors.black54
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Text(
+                      "Enter your name here",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                          color: Colors.black54
+                      ),
                     ),
                   ),
-                ),
-                Center(
-                  child: FutureBuilder(
-                    future: getName(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return FullScreenText(text: "Can't get username");
-                      }
+                  Center(
+                    child: FutureBuilder(
+                      future: getName(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return FullScreenText(text: "Can't get username");
+                        }
 
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return nameField();
-                      } else {
-                        return nameField();
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          return nameField();
+                        } else {
+                          return nameField();
+                        }
                       }
-                    }
+                    ),
                   ),
-                ),
-                Padding( // Game 1
-                  padding: const EdgeInsets.all(36.0),
-                  child: Center(
-                    child: SizedBox(
-                      width: 500,
-                      height: 100,
-                      child: ElevatedButton(
-                        onPressed: customizePrescribed,
-                        style: style,
-                        child: Text("Number In Order"),
+                  Padding( // Game 1
+                    padding: const EdgeInsets.all(36.0),
+                    child: Center(
+                      child: SizedBox(
+                        width: 500,
+                        height: 100,
+                        child: ElevatedButton(
+                          onPressed: customizePrescribed,
+                          style: style,
+                          child: Text("Number In Order"),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Padding( // Game 2
-                  padding: const EdgeInsets.all(36.0),
-                  child: Center(
-                    child: SizedBox(
-                      width: 500,
-                      height: 100,
-                      child: ElevatedButton(
-                        onPressed: customizeDesigned,
-                        style: style,
-                        child: Text("Matching Numbers"),
+                  Padding( // Game 2
+                    padding: const EdgeInsets.all(36.0),
+                    child: Center(
+                      child: SizedBox(
+                        width: 500,
+                        height: 100,
+                        child: ElevatedButton(
+                          onPressed: customizeDesigned,
+                          style: style,
+                          child: Text("Matching Numbers"),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Padding( // History
-                  padding: const EdgeInsets.all(36.0),
-                  child: Center(
-                    child: SizedBox(
-                      width: 500,
-                      height: 100,
-                      child: ElevatedButton(
-                        onPressed: seeHistory,
-                        style: style,
-                        child: Text("Exercise History"),
+                  Padding( // History
+                    padding: const EdgeInsets.all(36.0),
+                    child: Center(
+                      child: SizedBox(
+                        width: 500,
+                        height: 100,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            FocusScope.of(context).unfocus();
+                            Navigator.push(context, MaterialPageRoute(
+                                builder: (context) {
+                                  return HistoryPage();
+                                })
+                            );
+                            await gameModel.fetchDisplay(true, "");
+                          },
+                          style: style,
+                          child: Text("Exercise History"),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                if (gameModel.loading) CircularProgressIndicator() else Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "You have completed\n ${gameModel.prescribedTotal} repetitions in Number In Order\n "
-                           "${gameModel.designedTotal} repetitions in Matching Numbers",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                      fontSize: 28,
-                    ),
-                  )
-                ),
-              ],
+                  if (gameModel.loading) CircularProgressIndicator() else Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      "You have completed\n ${gameModel.prescribedTotal} repetitions in Number In Order\n "
+                             "${gameModel.designedTotal} repetitions in Matching Numbers",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 28,
+                      ),
+                    )
+                  ),
+                ],
+              ),
             ),
           ),
         );

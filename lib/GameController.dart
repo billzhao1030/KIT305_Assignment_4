@@ -236,8 +236,6 @@ class _GamePageState extends State<GamePage> {
 
                             if (widget.gameMode == false) {
                               completed = true;
-                            } else if (widget.isRound == false) {
-                              completed = true;
                             }
 
                             uploadRound();
@@ -591,9 +589,12 @@ class _GamePageState extends State<GamePage> {
 
   void completeGame() async {
     endTime = dateFormat.format(DateTime.now());
+    if (widget.gameMode == true && widget.isRound == false && completedRound > 0) {
+      completed = true;
+    }
     db.doc(id).update({
       'completed': true,
-      'endTime': endTime
+      'endTime': endTime,
     })
         .then((value) => print("Game updated"))
         .catchError((error) => print("Failed to update game: ${error}"));
